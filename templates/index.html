@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Пересчёт координат (МСК, СК-63, СК-42, ПЗ-90, WGS 84) — локально</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="wrap">
+    <header>
+        <h1>GeoConvert <span class="sub">— пересчёт координат (локальный сервис)</span></h1>
+    </header>
+
+    <div class="panel controls">
+        <div class="ucs-row">
+            <label>Исходная СК
+                <select id="srcSel"></select>
+            </label>
+            <button id="switchUcs" title="Поменять СК местами">⇄</button>
+            <label>Целевая СК
+                <select id="dstSel"></select>
+            </label>
+            <span class="spacer"></span>
+            <label class="fmt"><input type="radio" name="fmt" value="gg" checked> г.ггг</label>
+            <label class="fmt"><input type="radio" name="fmt" value="gms"> г°м'с"</label>
+        </div>
+        <div class="hint">
+            Ввод: <b>N,E</b> через запятую (разделитель целой и дробной части — точка).
+            Excel: скопируйте 2 колонки (табуляция заменится на запятую).
+            AutoCAD: выделите объекты, введите <b>_list</b>, скопируйте вывод целиком (X=N, Y=E).
+        </div>
+    </div>
+
+    <div class="panel io">
+        <div class="col">
+            <div class="col-head">
+                <span>N,E — исходные</span>
+                <span class="btns">
+                    <button id="fmtSwap" title="Перевести формат гг ↔ г°м'с&quot;">гг↔гмс</button>
+                    <button id="revBtn" title="Поменять N,E местами">реверс N,E</button>
+                </span>
+            </div>
+            <textarea id="srcText" rows="10" spellcheck="false"
+                      placeholder="59.938630000,30.314130000&#10;..."></textarea>
+        </div>
+        <div class="col">
+            <div class="col-head">
+                <span>N,E — результат</span>
+                <span class="btns">
+                    <button id="copyRes" title="Копировать результат (через таб)">копировать</button>
+                </span>
+            </div>
+            <textarea id="dstText" rows="10" readonly spellcheck="false"></textarea>
+        </div>
+    </div>
+
+    <div class="panel" id="tablePanel" hidden>
+        <div class="col-head">
+            <span id="countLabel"></span>
+            <span class="btns">
+                <span class="ac-label">Копировать в AutoCAD:</span>
+                <button id="acPointBtn" title="Команды AutoCAD для точек (_point)">точками</button>
+                <button id="acPolyBtn" title="Команды AutoCAD для полилинии (_pline)">полилинией</button>
+                <button id="copyTable" title="Копировать таблицу (N,E\tN,E)">копировать таблицу</button>
+                <button id="kmlBtn" title="Скачать результат точками в KML">KML (точки)</button>
+            </span>
+        </div>
+        <table id="resTable">
+            <thead>
+            <tr><th>#</th><th>N (исх.)</th><th>E (исх.)</th><th>N (рез.)</th><th>E (рез.)</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="panel" id="mapPanel" hidden>
+        <div class="col-head">
+            <span id="mapLabel">Карта — точки результата (OpenStreetMap)</span>
+            <span class="btns">
+                <button id="mapFit" title="Показать все точки">показать все</button>
+            </span>
+        </div>
+        <div id="map"></div>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <footer>
+        База: 543 проекции (ГЕОМОСТ/GEOBRIDGE, EPSG) · пересчёт: PROJ/pyproj · карта: OpenStreetMap/Leaflet (тайлы по сети, Яндекс API не используется).
+        <br>Результаты пересчёта — приближённые, не для геодезических работ.
+    </footer>
+</div>
+<div class="modal" id="acModal" hidden>
+    <div class="modal-box">
+        <div class="modal-head">
+            <b>Буфер обмена для AutoCAD</b>
+            <button id="acClose" title="Закрыть">×</button>
+        </div>
+        <p class="modal-hint">
+            Чтобы отобразить данные в AutoCAD (или другой совместимой системе):
+            поместите курсор в командную строку и нажмите сочетание клавиш Ctrl-V.
+        </p>
+        <textarea id="acText" rows="8" readonly spellcheck="false"></textarea>
+        <div class="modal-btns">
+            <button id="acCopy">Скопировать</button>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='vendor/leaflet.js') }}"></script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
